@@ -7,7 +7,6 @@ date: "`r format(Sys.time(), '%d %B %Y')`"
 
 output:
   pdf_document: default
-  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -175,39 +174,40 @@ forwardPropagation(randomInputs, Weights, activationFunctionsByLayer)
 On pourrait par exemple prendre 2 entrées et une sortie pour pouvoir dessiner les fonctions créées. Interpréter les résultats. Cette partie n'est pas évaluée.
 
 ```{r sandbox1}
-# # A correction
-# ninput <- 2
-# noutput <- 1
-# layerSizes <- c(2,1,1)
-# actFuncByLayer <- list(c(sigmoid), c(linear))
-# set.seed(1)
-# Weights <- createRandomWeightsByLayer(layerSizes)
-# # createRandomWeightByLayer initializes weights of the sigmoid to rather small
-# # values so that sigmoids are in their linear regime. To see the plateaus,
-# # increase the weights.
-# #
-# # make inputs as a 2D grid
-# no.grid <- 100
-# LB <- c(-1,-1)
-# UB <- c(1,1)
-# x1 <- seq(LB[1], UB[1], length.out=no.grid)
-# x2 <- seq(LB[2], UB[2], length.out=no.grid)
-# x.grid <- expand.grid(x1, x2)
-# dataInputs <- t(x.grid)
-# dataOutputs<-forwardPropagation(dataInputs, Weights, actFuncByLayer)
-# dataOutputs.grid <- matrix(dataOutputs, no.grid)
-# 
-# ### 2D contour plot
-# contour(x1, x2, dataOutputs.grid, nlevels=20, xlab="x1", ylab="x2")
-# #### 3D plot
-# mypersp <- persp(x = x1,y=x2,z=dataOutputs.grid,zlab = "NN")
-# ## Below is the nicer interactive 3D RGL version
-# library("rgl")
-# open3d()
-# surface3d(x1, x2, dataOutputs.grid, col= "lightblue")
-# title3d("NN output", col="blue", font=4)
-# decorate3d()
-# aspect3d(1, 1, 1)
+# A correction
+ninput <- 2
+noutput <- 1
+layerSizes <- c(2,1,1)
+actFuncByLayer <- list(c(sigmoid), c(linear))
+set.seed(1)
+Weights <- createRandomWeightsByLayer(layerSizes)
+# createRandomWeightByLayer initializes weights of the sigmoid to rather small
+# values so that sigmoids are in their linear regime. To see the plateaus,
+# increase the weights.
+#
+# make inputs as a 2D grid
+no.grid <- 100
+LB <- c(-1,-1)
+UB <- c(1,1)
+x1 <- seq(LB[1], UB[1], length.out=no.grid)
+x2 <- seq(LB[2], UB[2], length.out=no.grid)
+x.grid <- expand.grid(x1, x2)
+dataInputs <- t(x.grid)
+dataOutputs<-forwardPropagation(dataInputs, Weights, actFuncByLayer)
+dataOutputs.grid <- matrix(dataOutputs, no.grid)
+
+### 2D contour plot
+contour(x1, x2, dataOutputs.grid, nlevels=20, xlab="x1", ylab="x2")
+#### 3D plot
+mypersp <- persp(x = x1,y=x2,z=dataOutputs.grid,zlab = "NN")
+## Below is the nicer interactive 3D RGL version
+# install.packages("rgl")
+library("rgl")
+open3d()
+surface3d(x1, x2, dataOutputs.grid, col= "lightblue")
+title3d("NN output", col="blue", font=4)
+decorate3d()
+aspect3d(1, 1, 1)
 ```
 
 ## 2. Rétro-propagation
@@ -356,6 +356,7 @@ BP <- backPropagation(dataIn=dataInputs, dataOut=dataOutputs, weightsByLayer=Wei
 # forwardPropagation(inputs=dataInputs, weightsByLayer=Weights, activationFunctionsByLayer=actFuncByLayer)
 
 ```
+
 
 On compare le résultat de la rétropropagation à une différence finie calculée directement sur la fonction perte (loss). 
 
@@ -562,5 +563,38 @@ Voici quelques idées, vous pouvez piocher une idée (voire plusieurs si vous le
     * Proposer une formule pour calculer la souplesse de la fonction résultant d'un réseau de neurone (= une mesure de "capacité" ou "complexité"): cette souplesse est à estimer à structure de réseau donnée (nombre de couches, nombre et types de neurones), mais pour des poids et biais variables. De nombreuses réponses sont possibles à cette question, le plus important étant d'expliquer.
 * optimisation des poids par gradient stochastique: Lorsque le gradient est calculé avec une seule donnée prise au hasard (un point de `Xtrain` et la sortie `Ytrain` associée), la fonction de perte devient aléatoire. Dans ce cas, on dispose bien d'une version bruitée du gradient de la loss par rétropropagation ou différences finies. Essayer d'optimiser un réseau par descente de gradient stochastique.
 * l'idée qui vous rendra célèbre...
+
+
+```{r} 
+# a restarted descent
+res_grad <- gradient_descent(pbFormulation=pbFormulation,algoParam = optAlgoParam,printlevel=printlevel)
+# extract the net learned
+xBest_grad <- res_grad$xbest
+lossBest_grad <- res_grad$fbest
+wBest_grad <- xtoWeightsByLayer(xBest_grad,layerSizes)
+```
+```{r}
+# Performance sur l'ensemble d'entraînement
+predTrain <- forwardPropagation(Xtrain, wBest_grad, actFuncByLayer) # Prédictions du réseau appris
+rmseTrain <- sqrt((sum((Ytrain - predTrain)^2)) / ntrain)
+cat("RMSE Entraînement =", rmseTrain, "\n")
+plot(Ytrain, predTrain, xlab = "Données", ylab = "Prédictions", main = "Entraînement", pch = 3, col = "blue")
+ymin <- min(Ytrain)
+ymax <- max(Ytrain)
+lines(x = c(ymin, ymax), y = c(ymin, ymax))
+
+# Performance sur l'ensemble de test
+predTest <- forwardPropagation(Xtest, wBest_grad, actFuncByLayer) # Prédictions du réseau appris
+rmseTest <- sqrt((sum((Ytest - predTest)^2)) / ntest)
+cat("RMSE Test =", rmseTest, "\n")
+plot(Ytest, predTest, xlab = "Données", ylab = "Prédictions", main = "Test", pch = 3, col = "red")
+ymin <- min(Ytest)
+ymax <- max(Ytest)
+lines(x = c(ymin, ymax), y = c(ymin, ymax))
+
+```
+
+
+
 
 
