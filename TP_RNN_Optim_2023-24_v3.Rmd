@@ -31,11 +31,11 @@ Eh oui, pas de noms, pas de note. Insérer ci-après le nom de chaque personne d
 
 ```{r}
 
-#1. DURAND Victor
-#2. DUPONT Annette
-#3. DUCHEMIN Pierre
-#4. DULAC Isis
-#5. DUMMY John
+#1. DECROUX paul
+#2. BAYOUB Wassim
+#3. BENNAJI Imane
+#4. PHALIPPOU-GELABERT	Donatien
+#5. BOUZALIM	Oussama
 
 ```
 
