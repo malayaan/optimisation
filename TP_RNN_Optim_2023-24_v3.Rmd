@@ -567,6 +567,10 @@ Voici quelques idées, vous pouvez piocher une idée (voire plusieurs si vous le
 
 
 ```{r} 
+optAlgoParam$direction_type <- "momentum" 
+optAlgoParam$linesearch_type <- "armijo" 
+optAlgoParam$stepFactor <- 1 # step factor when there is no line search,
+optAlgoParam$beta <- 0.5 # momentum term for direction_type == "momentum" or "NAG"
 # a restarted descent
 res_grad <- gradient_descent(pbFormulation=pbFormulation,algoParam = optAlgoParam,printlevel=printlevel)
 # extract the net learned
@@ -626,7 +630,7 @@ for (direction in direction_types) {
   for (linesearch in linesearch_types) {
     for (stepFactor in stepFactors) {
       for (beta in betas) {
-        
+
         optAlgoParam$budget <- 4000
         optAlgoParam$minGradNorm <- 1.e-6
         optAlgoParam$minStepSize <- 1.e-11
