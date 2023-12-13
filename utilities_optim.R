@@ -114,6 +114,7 @@ plot_res_optim <- function(PbFormulation,optAlgoParam,res,printlevel,nout=200)
   } else {cat("\n no convergence plot done, only 1 point to draw\n")}
   # x plots if in d=2
   if (d==2){
+    browser()
     plot_contour(LB=pbFormulation$LB,UB=pbFormulation$UB,f=pbFormulation$fun) 
     if (printlevel>=4){
       points(res$rec$X[,1], res$rec$X[,2], pch=20, col="blue", cex=0.5)  
