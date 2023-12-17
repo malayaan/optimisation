@@ -794,14 +794,32 @@ Ytrain <- Ytrain[, 1:15, drop = FALSE]
 Ytest <- Ytest[, 1:100, drop = FALSE]
 ```
 
+
 ```{r}
+pbFormulation <- list()
+pbFormulation$fun<-squareLoss #function to minimize
+d<-length(x)
+pbFormulation$d<-d # dimension
+pbFormulation$LB<-rep(-10,d) #lower bounds
+pbFormulation$UB<-rep(10,d) #upper bounds
 
-
-layerSizes <- c(2, 4, 1)  # Pour la classification binaire, la dernière couche doit avoir 1 neurone
-
-# ReLU dans les couches cachées, Sigmoïde dans la couche de sortie pour la classification binaire
-actFuncByLayer <- list(c(relu, tanh, relu, tanh), c(sigmoid) )
-
+### algorithm settings
+optAlgoParam <- list()
+set.seed(112233) # repeatable run despite the use of pseudo-random number generators in runif
+#
+optAlgoParam$budget <- 4000
+optAlgoParam$minGradNorm <- 1.e-6
+optAlgoParam$minStepSize <- 1.e-11
+optAlgoParam$nb_restarts <- 4
+#
+# Paramètres pour l'algorithme de descente de gradient
+optAlgoParam$direction_type <- "gradient" 
+optAlgoParam$linesearch_type <- "none" 
+optAlgoParam$stepFactor <- 0.01
+optAlgoParam$beta <- 0.1
+optAlgoParam$xinit <- weightsByLayerToX(weightsByLayer = Weights)
+#
+printlevel <- 2 # controls how much is stored and printed, choices: 0 to 4, cf. gradient_descent.R top comments for more info. 
 
 # Initialisation des poids et préparation des données
 set.seed(5678)
@@ -810,13 +828,13 @@ dataInputs <- Xtrain
 dataOutputs <- Ytrain  
 x <- weightsByLayerToX(weightsByLayer = Weights)
 
-# Paramètres pour l'algorithme de descente de gradient
-optAlgoParam$direction_type <- "gradient" 
-optAlgoParam$linesearch_type <- "none" 
-optAlgoParam$stepFactor <- 0.01
-optAlgoParam$beta <- 0.1
+layerSizes <- c(2, 4, 1)  # Pour la classification binaire, la dernière couche doit avoir 1 neurone
+
+# ReLU dans les couches cachées, Sigmoïde dans la couche de sortie pour la classification binaire
+actFuncByLayer <- list(c(relu, tanh, relu, tanh), c(sigmoid) )
 
 ```
+
 
 ```{r}
 # Exécution de la descente de gradient
